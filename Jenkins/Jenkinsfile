@@ -13,15 +13,15 @@ pipeline {
                 echo 'Building..'
             }
         }
-        stage('Test A') {
+        stage('Test B') {
             steps {
-                echo 'Testing A..'
+                echo 'Testing B..'
             }
         }
 		
-		stage('Test B') {
+		stage('Test A') {
             steps {
-                echo 'Testing B..'
+                echo 'Testing A..'
             }
         }
 		
