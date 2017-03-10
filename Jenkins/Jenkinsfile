@@ -25,6 +25,12 @@ pipeline {
             }
         }
 		
+		stage('Test C') {
+			steps {
+				echo 'Testing C..'
+			}
+		}
+		
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
