@@ -1,0 +1,83 @@
+/*LED_Breathing.ino Arduining.com  20 AUG 2015
+Using NodeMCU Development Kit V1.0
+Going beyond Blink sketch to see the blue LED breathing.
+A PWM modulation is made in software because GPIO16 can't
+be used with analogWrite().
+*/
+
+#include <pcf8574_esp.h>
+#include <Wire.h>
+#include "avdweb_VirtualDelay.h"
+
+
+VirtualDelay singleDelay; // default = millis
+TwoWire testWire;
+// Initialize a PCF8574 at I2C-address 0x20, using GPIO5, GPIO4 and testWire for the I2C-bus
+PCF857x pcf8574(0x20, &testWire);
+
+#define LED     D1        // Led in NodeMCU at pin GPIO16 (D0).
+ 
+#define BRIGHT    300     //max led intensity (1-500)
+#define INHALE    1250    //Inhalation time in milliseconds.
+#define PULSE     INHALE*1000/BRIGHT
+#define REST      1000    //Rest Between Inhalations.
+
+#define PIN_INT D5
+#define PIN_SDA D7
+#define PIN_SCL D8
+
+//----- Setup function. ------------------------
+void setup() {                
+  Serial.begin(115200);
+  Wire.pins(PIN_SDA, PIN_SCL);//SDA - D1, SCL - D2
+  Wire.begin();
+  
+  pinMode(PIN_INT, INPUT_PULLUP);
+
+  pcf8574.begin( 0xFF); 
+  pcf8574.resetInterruptPin();
+  pinMode(LED, OUTPUT);   // LED pin as output.    
+}
+
+
+bool CheckKey(byte key, byte num){ //0, 1, 2, 3
+  return key & (1 << num);
+}
+
+//----- Loop routine. --------------------------
+void loop() {
+  //ramp increasing intensity, Inhalation: 
+  for (int i=1;i<BRIGHT;i++){
+    digitalWrite(LED, LOW);          // turn the LED on.
+    delayMicroseconds(i*10);         // wait
+    digitalWrite(LED, HIGH);         // turn the LED off.
+    delayMicroseconds(PULSE-i*10);   // wait
+    delay(0);                        //to prevent watchdog firing.
+  }
+
+  Serial.println(millis());
+
+  if( digitalRead(PIN_INT)==LOW ){
+    delay(50);
+    byte b = pcf8574.read8();
+    Serial.println( "INT: " + String(b));
+
+    byte keys = ((~b)) & 0x0F;
+    
+    if( CheckKey(keys, 8) ){
+      Serial.println( "KEY 7");
+      delay(2000);
+    }
+  }
+  
+  //ramp decreasing intensity, Exhalation (half time):
+  for (int i=BRIGHT-1;i>0;i--){
+    digitalWrite(LED, LOW);          // turn the LED on.
+    delayMicroseconds(i*10);          // wait
+    digitalWrite(LED, HIGH);         // turn the LED off.
+    delayMicroseconds(PULSE-i*10);  // wait
+    i--;
+    delay(0);                        //to prevent watchdog firing.
+  }
+  delay(REST);                       //take a rest...
+}
