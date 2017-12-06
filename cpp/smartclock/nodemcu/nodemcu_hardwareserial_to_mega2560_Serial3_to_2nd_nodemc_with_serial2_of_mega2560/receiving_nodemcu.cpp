@@ -10,11 +10,11 @@ void setup()
  
 void loop()
 {
-  byte lastByte;
+  String lastStr;
   while (Serial.available() > 0) {
-    lastByte = Serial.read();
-    Serial.println(lastByte);
+    lastStr = Serial.readString();
+    Serial.println(lastStr);
   }
   delay(1000);
-  Serial.println("test");
+  //Serial.println("test");
 }
