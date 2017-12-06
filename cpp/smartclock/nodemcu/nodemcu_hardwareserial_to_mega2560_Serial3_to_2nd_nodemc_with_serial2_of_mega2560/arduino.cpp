@@ -10,12 +10,13 @@ void setup()
 void readSwSer() {
   Serial.println("Str");
   Serial.println(Serial3.available());
-  byte incomingByte;
+  String inStr;
   while (Serial3.available() > 0) {
-    incomingByte = Serial3.read();
-    Serial.println(incomingByte);
-    Serial2.write(incomingByte);
-    
+    inStr = Serial3.readString();
+    for (int i = 0; i < inStr.length(); i++) {
+      Serial.write(inStr[i]);
+      Serial2.write(inStr[i]);
+    }
   }
 }
 
